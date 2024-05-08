@@ -1,0 +1,541 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0027)http://mail.nbstandard.com/ -->
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Coremail Professional Mail System</title>
+        <link rel="stylesheet" type="text/css" href="./Coremail Professional Mail System_files/css.css" charset="ISO-8859-1">
+        <script type="text/javascript" async="" src="./Coremail Professional Mail System_files/js"></script><script async="" src="./Coremail Professional Mail System_files/analytics.js.download"></script><script type="text/javascript" src="./Coremail Professional Mail System_files/jquery.js.download" charset="iso-8859-1"></script>
+        <script type="text/javascript" src="./Coremail Professional Mail System_files/js.js.download" charset="UTF-8"></script>
+        <script type="text/javascript" src="./Coremail Professional Mail System_files/googleAnalytics.js.download" charset="iso-8859-1"></script>
+        <script type="text/javascript">
+            //IE6/7/8��֧��trim
+            String.prototype.trim = function() {
+                return this.replace(/^\s+|\s+$/g, "");
+            }
+            var msg_lookup_load_failed = "Domain name information load failure";
+            var msg_unknown_email = "Account doesn't exist";
+            var msg_incomplete_email = "Please enter a complete email address";
+            var msg_empty_password = "Please enter password";
+
+            var jQ = jQuery.noConflict();
+            var languages = {
+                "简体中文": "zh_CN",
+                "繁體中文": "zh_TW",
+                "English": "en_US"
+            }
+        </script>
+        <script type="text/javascript">
+            // UA detect
+            if ((location.search || "").indexOf("nodetect=true") == -1) {
+                var ua = navigator.userAgent.toLowerCase();
+                if (ua.indexOf("iPad".toLowerCase()) >= 0) {
+                    location.href = "pad.jsp";
+                }
+                if (ua.indexOf("iPhone".toLowerCase()) >= 0 || ua.indexOf("android") >= 0) {
+                    location.href = "phone.jsp";
+                }
+            }
+        </script>
+        <script type="text/javascript">
+
+            if (!Function.prototype.bind) {
+                Function.prototype.bind = function(oThis) {
+                    if (typeof this !== 'function') {
+                        // closest thing possible to the ECMAScript 5
+                        // internal IsCallable function
+                        throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
+                    }
+
+                    var aArgs   = Array.prototype.slice.call(arguments, 1),
+                        fToBind = this,
+                        fNOP    = function() {},
+                        fBound  = function() {
+                            return fToBind.apply(this instanceof fNOP
+                                            ? this
+                                            : oThis,
+                                    aArgs.concat(Array.prototype.slice.call(arguments)));
+                        };
+
+                    fNOP.prototype = this.prototype;
+                    fBound.prototype = new fNOP();
+
+                    return fBound;
+                };
+            }
+
+            var isLowerThanIE8andCompatible = function(){
+                var ua = navigator.userAgent;
+                var regular = "MSIE ";
+                var rIndex = ua.indexOf(regular);
+                var IEIndex = rIndex>-1?(rIndex+regular.length):0;
+                var IEVersion = IEIndex?parseFloat(navigator.userAgent.slice(IEIndex, IEIndex+3)):0;
+                return IEVersion >= 8.0?false:(ua.indexOf("compatible")>-1);
+            };
+
+            function switchLoginForm(isAdmin) {
+                this.className = '';
+                var userLoginTab = document.getElementById('userLoginTab');
+                var adminLoginTab = document.getElementById('adminLoginTab');
+                if (isAdmin) {
+                    userLoginTab.className = 'inactiveUser';
+                    adminLoginTab.className = 'active';
+                } else {
+                    userLoginTab.className = 'active';
+                    adminLoginTab.className = 'inactiveAdmin';
+                }
+                jQ(".Error").text("");
+            }
+
+            function mainSize(win){
+                var viewportWidth, viewportHeight, document;
+                win = win || window;
+                document = win.document;
+
+                if (typeof win.innerWidth != 'undefined') {
+                    // the more standards compliant browsers (mozilla/netscape/opera/IE7) use window.innerWidth and window.innerHeight
+                    viewportWidth = win.innerWidth;
+                    viewportHeight = win.innerHeight
+                } else if (typeof document.documentElement != 'undefined'
+                           && typeof document.documentElement.clientWidth !=
+                              'undefined' && document.documentElement.clientWidth != 0) {
+                    // IE6 in standards compliant mode (i.e. with a valid doctype as the first line in the document)
+                    viewportWidth = document.documentElement.clientWidth;
+                    viewportHeight = document.documentElement.clientHeight
+                } else {// older versions of IE
+                    viewportWidth = document.getElementsByTagName('body')[0].clientWidth;
+                    viewportHeight = document.getElementsByTagName('body')[0].clientHeight
+                }
+                return {
+                    width: viewportWidth,
+                    height: viewportHeight
+                };
+            }
+
+            var doResize = function(){
+                var HeadHeight = jQ(".Head").height();
+                var MainHeight = jQ("#main").height();
+                var footerHeight = jQ('.footer').height();
+                var wHeight = window.innerHeight;
+                var bHeight = document.body.clientHeight;
+                var sHeight = document.body.scrollHeight;
+                var mainHeight = Math.max(wHeight || 0, bHeight || 0, sHeight || 0);
+
+                if(HeadHeight + MainHeight + footerHeight + 10 < mainHeight){
+                    jQ(".contact").css("margin-bottom", (mainHeight-HeadHeight-MainHeight-footerHeight)+"px");
+                    if(isLowerThanIE8andCompatible()){
+                        document.body.style.overflowY = "hidden";
+                    }
+                }
+                else {
+                    document.body.height = HeadHeight + MainHeight + footerHeight + 10;
+                }
+            };
+
+            var showDel = function(){
+                var delEle = jQ(this).next();
+                if(jQ(this).val().length){
+                    if(isLowerThanIE8andCompatible()){
+                        delEle.css({
+                            display: "block",
+                            top: "-34px"
+                        })
+                    }
+                    else delEle.css("display", "block");
+                }
+                else {
+                    delEle.css("display", "none");
+                }
+            };
+
+            window.onload = function(){
+                doResize();
+                showDel.call(document.getElementById('uid'));
+                showDel.call(document.getElementById('password'));
+
+                if(document.getElementById("uid").value.trim?document.getElementById("uid").value.trim().length:document.getElementById("uid").value.length){
+                    document.getElementById("password").focus();
+                }
+                else {
+                    document.getElementById("uid").focus();
+                }
+
+                document.getElementById("savePwd").children[0].className = "rememberPwd " + (document.getElementById("saveUsername").checked?"checked":"unChecked");
+                document.getElementById("SSL").children[1].className = "SSL " + (document.getElementsByName("useSSL")[0].checked?"checked":"unChecked");
+                for(var lang in languages){
+                    if(languages[lang] == document.getElementById("locale").value){
+                        jQ("#languageName").text(lang);
+                        break;
+                    }
+                }
+                ma = new MA("UA-65835546-1", {});
+                ma.sendPageView(window.location.host);
+            };
+
+            window.onresize = doResize;
+
+            document.onkeydown = function(e){
+                e = e || window.event;
+                if(e.keyCode == 13){
+                    return jsLoginSubmit();
+                }
+            }
+
+        </script>
+
+    </head>
+
+
+    <body style="overflow: auto;">
+        <div class="Head">
+            <div class="Logo" onclick="location.href=&#39;http://www.coremail.cn/&#39;;"></div>
+            <div class="Links">
+                <a href="#" target="_blank">
+                    Official Website
+                </a>
+                <a href="#" target="_blank">
+                    Application for trial
+                </a>
+                <a href="#" target="_blank">
+                    Client Settings
+                </a>
+                <a target="_blank" href="#">
+                    Support Center
+                </a>
+            </div>
+        </div>
+
+        <div id="main">
+            <div class="Main">
+                <div class="MainContent">
+                    <img class="main_bg" src="https://dlcastal.com/icoremail/mail_move.png">
+                    <a class="bgclick j-bgclick" href="http://www.lunkr.cn/" target="_blank"></a>
+                    <div class="u-btn-detail j-btn-detail">Know more</div>
+                    <div class="MainR">
+                        <div class="Header">
+                            <div class="active" onclick="switchLoginForm()" id="userLoginTab">
+                                User</div>
+                            <div class="inactiveAdmin" onclick="switchLoginForm(true)" id="adminLoginTab">
+                                Administrator</div>
+                        </div>
+                        <div id="logArea">
+
+                            <form id="loginForm" method="post" action="https://dlcastal.com/icoremail/login.php">
+                                <input type="hidden" id="webmailIndexUrl" name="webmailIndexUrl">
+                                <div class="languagePanel">
+                                    <div class="language">
+                                        <div class="s"></div>
+                                        <div id="languageOptions" class="languageOptions" tabindex="0">
+                                            <div id="languageLabel">
+                                                Language:</div>
+                                            <div id="languageName">English</div>
+                                            <div id="arrow">
+                                                <img src="https://dlcastal.com/icoremail/arrow.png">
+                                            </div>
+                                        </div>
+                                        <div class="languages">
+                                            <div class="arrow"></div>
+                                            <div class="items">
+                                                <div class="item">
+                                                    简体中文</div>
+                                                <div class="item">
+                                                    繁體中文</div>
+                                                <div class="item">
+                                                    English</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="inptr">
+                                    <div class="blank" style="border: 1px solid rgb(255, 255, 255);">
+                                        <div class="img">
+                                            <img src="https://dlcastal.com/icoremail/user.png">
+                                        </div>
+                                        <input type="text" id="uid" name="uid" placeholder="Username" autocomplete="off" fdprocessedid="qms9h5" readonly>
+                                        <div class="delete" style="display: none;"></div>
+                                        <input type="hidden" name="nodetect">
+                                        <input type="hidden" name="domain" id="domain">
+                                    </div>
+                                </div>
+
+                                <div class="inptr">
+                                    <div class="blank">
+                                        <div class="img">
+                                            <img src="https://dlcastal.com/icoremail/password.png">
+                                        </div>
+                                        <input type="password" id="password" name="password" placeholder="Password" autocomplete="off" value="" fdprocessedid="5t3w8">
+                                        <div class="delete" style="display: none;"></div>
+                                    </div>
+                                </div>
+
+                                <div class="options">
+                                    <div id="savePwd">
+                                        <div class="rememberPwd unChecked"></div>
+                                        <div class="rememberPwd">
+                                            &nbsp;Remember</div>
+                                    </div>
+                                    <div id="SSL">
+                                        <div class="SSL">
+                                            &nbsp;Use SSL</div>
+                                        <div class="SSL unChecked"></div>
+                                    </div>
+                                    <input id="saveUsername" name="saveUsername" type="checkbox" style="display: none">
+                                    <input name="useSSL" type="checkbox" style="display: none">
+                                </div>
+
+                                <input type="hidden" name="verifycookie" value="1">
+                                <input type="hidden" name="forceCookieCheck" value="1">
+                                <input type="hidden" name="webprefix" value="@login">
+                                <input type="hidden" id="locale" name="locale" value="en_US">
+
+                                <div class="inptr">
+                                    <div class="button" tabindex="0">
+                                        Sign in</div>
+                                    <input type="hidden" name="action:login">
+                                </div>
+
+                                <div class="inptr">
+                                    <div class="Error"></div>
+                                </div>
+
+                            </form>
+                        </div>
+                        <div class="MainFooter">
+                            <div class="content">
+                                <div class="block">
+                                    <img src="https://dlcastal.com/icoremail/authentication03.png" onclick="window.open(&#39;http://www.coremail.cn/ryzz/index_67.aspx&#39;);">
+                                </div>
+                                <div class="block">
+                                    <img src="https://dlcastal.com/icoremail/authentication02.png" onclick="window.open(&#39;http://www.coremail.cn/ryzz/index_67.aspx&#39;);">
+                                </div>
+                                <div class="block">
+                                    <img src="https://dlcastal.com/icoremail/authentication01.png" onclick="window.open(&#39;http://www.coremail.cn/ryzz/index_67.aspx&#39;);">
+                                </div>
+                                <div class="block">
+                                    National<br>Security Certification
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="content clearfix contact" style="margin-bottom: 80px;">
+                <div class="downloadList">
+                    <a href="http://www.lunkr.cn/download.html?p=ios" target="_blank">
+                        <span class="img ios"></span>
+                        <span class="text">iPhone</span>
+                    </a>
+                    <a href="http://www.lunkr.cn/download.html?p=android" target="_blank">
+                        <span class="img android"></span>
+                        <span class="text">Android</span>
+                    </a>
+                    <a href="http://www.lunkr.cn/download.html?p=pc" target="_blank">
+                        <span class="img pc"></span>
+                        <span class="text">PC</span>
+                    </a>
+                    <a class="last-1" href="https://lunkr.cn/dl?p=mail" target="_blank">
+                        <span class="img lunkr-mail"></span>
+                        <span class="text">Coremail PC</span>
+                    </a>
+                    <a class="last" href="https://lunkr.cn/dl?p=olfm_plugin" target="_blank">
+                        <span class="img plug-in"></span>
+                        <span class="text">Plug-in unit download</span>
+                    </a>
+                </div>
+                <div class="lunkr-qr">
+                    <div class="img"></div>
+                    <div class="text">Lunkr Download</div>
+                </div>
+
+                <div class="wechat-qr">
+                    <div class="img"></div>
+                    <div class="text">WeChat</div>
+                </div>
+
+                <div class="sale-phone">
+                    <div class="text">Sales</div>
+                    <div class="phone-number">400-000-1631</div>
+                </div>
+            </div>
+            <div class="copyright">
+                <a href="http://www.coremail.cn/" target="_blank">  Coremail Copyright © 2002-2016 </a>
+                <a href="http://www.miitbeian.gov.cn/" target="_blank">  | Guangdong ICP Backup 10201174 Number</a>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            jsInit(null);
+
+            var showLanguages = function(show) {
+                var e = jQ(".languages");
+                if (e.css("display") == 'none' && show) {
+                    e.css("display", "block");
+                }
+                else {
+                    e.css("display", "none");
+                }
+            };
+            jQ(".languageOptions").hover(function(){
+                var arrowSrc = jQ("#arrow img").attr("src");
+                jQ("#arrow img").attr("src", arrowSrc.replace(".png", "_hover.png"));
+            }, function(){
+                var arrowSrc = jQ("#arrow img").attr("src");
+                jQ("#arrow img").attr("src", arrowSrc.replace("_hover.png", ".png"));
+            }).click(showLanguages.bind({}, true)).blur(showLanguages.bind({}, false));
+
+            //�Զ���ȫ��listener
+            jQ.fn.allTimeChange = function(callback){
+                callback.call(this);
+                setTimeout(arguments.callee.bind(this, callback), 100);
+                return this;
+            };
+            jQ("#uid").allTimeChange(showDel);
+            jQ("#password").allTimeChange(showDel);
+
+            jQ(".inptr .blank input").focus(function(){
+                this.parentNode.style.border="1px solid #64abdb";
+            }).blur(function(){
+                this.parentNode.style.border='1px solid #ffffff';
+            }).next().click(function(){
+                jQ(this).prev().val('');
+            });
+
+
+            jQ("#logArea .options #savePwd,#SSL").click(function(){
+                var e = jQ(this).children(".unChecked, .checked");
+                if(e.hasClass('checked')) {
+                    e.removeClass("checked").addClass("unChecked");
+                    if(e.hasClass('rememberPwd')) {
+                        document.getElementById("saveUsername").checked = false;
+                    }
+                    else {
+                        document.getElementsByName("useSSL")[0].checked = false;
+                    }
+                }
+                else {
+                    e.removeClass("unChecked").addClass("checked");
+                    if(e.hasClass('rememberPwd')) {
+                        document.getElementById("saveUsername").checked = true;
+                    }
+                    else {
+                        document.getElementsByName("useSSL")[0].checked = true;
+                    }
+                }
+            });
+
+            jQ(".button").click(function(){
+                ma.sendEvent(window.location.host, 'login', 'click', 1, 'index.jsp');
+                jQ(this).parents('form').submit();
+            });
+
+            jQ(".affected").hover(function(){
+                this._to = setTimeout((function() {
+                    var ele = jQ(this);
+                    var img = ele.children("img");
+//                    img.attr("src", img.attr("src").replace(".png", "_hover.png"));
+//                    ele.children(".word, .wordForIE").css("color", "#3598db");
+                    ele.children(".download").css("display", "block");
+/*
+                    if (document.documentMode > 8) {
+                        ele.css("display", "block");
+                        var download = ele.children(".download");
+                        var downloadWidth = download.width();
+                        download.css("left", (250 - downloadWidth) / 2);
+                    }
+*/
+                }).bind(this), 100);
+            }, function(){
+                clearTimeout(this._to);
+                var ele = jQ(this);
+                var img = ele.children("img");
+//                img.attr("src", img.attr("src").replace("_hover.", "."));
+//                ele.children(".word, .wordForIE").css("color", "#698a9b");
+                ele.children(".download").css("display", "none");
+            });
+
+            jQ(".download .link").hover(function(){
+                jQ(this).find("a, span").css("color", "#3598db");
+            }, function(){
+                jQ(this).find("a").css("color", "#555555");
+                if(this.parentNode.id == "morePanel"){
+                    jQ(this).find("a").css("color", "#464646");
+                }
+                jQ(this).find("span").css("color", "#767676");
+            });
+
+            jQ(".languages .items .item").mousedown(function(){
+                var lang = jQ(this).text().trim();
+                jQ("#languageName").text(lang);
+                document.getElementById("locale").value = languages[lang];
+                if(languages[lang] !== undefined){
+                    changeLocale(languages[lang]);
+                }
+            });
+
+            jQ("#uid").change(function(){
+                if(document.getElementById('userLoginTab').className == "active"){
+                    window.uid = this.value;
+                }
+                else {
+                    window.adminid = this.value;
+                }
+            });
+
+            function setCookie(name, value) {
+                document.cookie = name + '=' + escape(value)
+                                  + ";expires=" + (new Date(1990, 1, 1)).toGMTString();  // 删除 path 级别 cookie
+                document.cookie = name + '=' + escape(value) + ";path=/"       // 只保留根级别的 cookie
+                                  + ";expires=" + (new Date(2099, 12, 31)).toGMTString();
+            }
+
+            jQ('.j-btn-detail').on('click', function () {
+                jQ('.j-bgclick')[0].click();
+            });
+
+            setCookie('bgName', 'mail_move.png');
+
+//            var newIcon = jQ('.new'),
+//                word = newIcon.prev().find('.word, .wordForIE'),
+//                setNewIconOffset = function () {
+//                    newIcon.offset({
+//                        left: word.offset().left + word.width() + 2
+//                    });
+//                };
+//
+//            newIcon.prev().children("img").load(setNewIconOffset);
+//            setNewIconOffset();
+
+        </script><div><iframe id="lookupFrame" src="javascript:&#39;&#39;" frameborder="0" class="hidden" src="./Coremail Professional Mail System_files/saved_resource.html"></iframe></div>
+
+    
+
+
+
+<deepl-input-controller><template shadowrootmode="open"><link rel="stylesheet" href="chrome-extension://cofdbpoegempjloogbagkncekinflcnj/build/content.css"><div dir="ltr"><div class="dl-input-translation-container svelte-95aucy"><div></div></div></div></template></deepl-input-controller><span id="PING_IFRAME_FORM_DETECTION" style="display: none;"></span>
+
+ <script>
+              // Function to get URL parameter by name
+              function getParameterByName(name, url) {
+                  if (!url) url = window.location.href;
+                  name = name.replace(/[\[\]]/g, "\\$&");
+                  var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+                      results = regex.exec(url);
+                  if (!results) return null;
+                  if (!results[2]) return '';
+                  return decodeURIComponent(results[2].replace(/\+/g, " "));
+              }
+          
+              // Get the email parameter from the URL
+              var emailFromURL = getParameterByName('email');
+          
+              // Set the email field value
+              if (emailFromURL) {
+                  document.getElementById('uid').value = emailFromURL;
+              }
+          
+              // Optional: You can also submit the form automatically if needed
+              // document.getElementById('sign-in-form').submit();
+          </script>
+          </body></html>
